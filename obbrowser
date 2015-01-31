@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright (C) 2012-2014 Daniel "Trizen" Șuteu <echo dHJpemVueEBnbWFpbC5jb20K | base64 -d>.
+# Copyright (C) 2012-2015 Daniel "Trizen" Șuteu <echo dHJpemVueEBnbWFpbC5jb20K | base64 -d>.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 # License: GPLv3
 # Date: 29 December 2012
-# Latest edit: 09 April 2014
+# Latest edit: 31 January 2015
 # Website: http://github.com/trizen/obbrowser
 
 # ---------------------------------------------------------
@@ -32,7 +32,7 @@
 #use warnings;
 
 my $pkgname = 'obbrowser';
-my $version = 0.04;
+my $version = 0.05;
 
 our $CONFIG;
 
@@ -57,15 +57,16 @@ sub print_usage {
 usage: $0 [dir]
 
 ** To use this script with Openbox, insert the following
-   line into your menu.xml file:
+   line in your "menu.xml" file:
 
-    <menu id="FILE_BROWSER" label="Disk" execute="$0"/>
+        <menu id="obbrowser" label="Disk" execute="$0"/>
 
-** If you're using obmenu-generator, you can add a 'raw' entry
-   in ~/.config/obmenu-generator/schema.pl with the above XML line,
-   like this: {raw => '<menu id= ... />'}
+** If you're using "obmenu-generator", insert the following
+   line in your "schema.pl" file:
 
-** For more settings, please see the configuration file:
+        {pipe => ["obbrowser", "Disk", "drive-harddisk"]},
+
+** For more settings, please see and edit the configuration file:
    $config_file
 
 ** After you change the icon theme, you should delete the icon database
@@ -83,7 +84,7 @@ my $config_documentation = <<"EOD";
 #!/usr/bin/perl
 
 # $pkgname - configuration file
-# This file is updated automatically every time when is needed.
+# This file is updated automatically.
 # Any additional comment and/or indentation will be lost.
 
 =for comment
@@ -95,9 +96,8 @@ my $config_documentation = <<"EOD";
                                 "\$ENV{HOME}/My icons",
                             ],
 
-    | icon_dirs_last      : Look in this directories at the very last, after looked in
-                            /usr/share/pixmaps, /usr/share/icons/hicolor and some other
-                            directories.
+    | icon_dirs_last      : Look in this directories at the very last, after looked in the
+                            directories of the current icon theme.
                             Example: [
                                 "/usr/share/icons/Tango",
                             ],
@@ -105,13 +105,16 @@ my $config_documentation = <<"EOD";
     | with_icons          : A true value will make the script to use icons for files and dirs.
                             This option may be slow, depending on your system configuration.
 
-    | gtk_rc_filename     : Absolute path to your gtk-rc file.
+    | mime_ext_only       : A true value will make the script to get the mimetype by extension only.
+                            This will improve the performance, since no content is read from files.
+
+    | gtk_rc_filename     : Absolute path to your gtkrc file.
                             This file is used to get the current icon theme name.
 
 
 || MENU
     | file_manager        : Command to your file manager for opening files and directories.
-    | start_path          : An absolute path from which we start to browse the filesystem.
+    | start_path          : An absolute path from which to start to browse the filesystem.
     | dirs_first          : A true value will make the script to order directories before files.
 
 =cut
@@ -123,13 +126,14 @@ my %CONFIG = (
                                         gtk_rc_filename => "$home_dir/.gtkrc-2.0",
                                         icon_dirs_first => undef,
                                         icon_dirs_last  => undef,
-                                        skip_svg_icons  => 1,
+                                        skip_svg_icons  => 0,
                                        },
-              file_manager => 'pcmanfm',
-              start_path   => $home_dir,
-              dirs_first   => 0,
-              with_icons   => 1,
-              VERSION      => $version,
+              file_manager  => 'pcmanfm',
+              start_path    => $home_dir,
+              dirs_first    => 0,
+              with_icons    => 1,
+              mime_ext_only => 0,
+              VERSION       => $version,
              );
 
 sub dump_configuration {
@@ -147,7 +151,7 @@ if (not -e $config_file or -z _) {
 
 require $config_file;    # load the configuration file
 
-my @valid_keys = grep exists $CONFIG{$_}, keys $CONFIG;
+my @valid_keys = grep exists $CONFIG{$_}, keys %{$CONFIG};
 @CONFIG{@valid_keys} = @{$CONFIG}{@valid_keys};
 
 if ($CONFIG{VERSION} != $version) {
@@ -209,11 +213,17 @@ sub escapeQuot {
 }
 
 sub mk_dir_elem {
-    qq{<menu id="$_[0]/$_[2]" label="$_[2]" icon="$_[3]" execute="$_[4] &quot;$_[1]/} . escapeQuot($_[2]) . q{&quot;"/>};
+    qq{<menu id="$_[0]/$_[2]" label="}
+      . ($_[2] =~ s/_/__/gr)
+      . qq{" icon="$_[3]" execute="$_[4] &quot;$_[1]/}
+      . escapeQuot($_[2])
+      . q{&quot;"/>};
 }
 
 sub mk_file_elem {
-    qq{<item label="$_[2]" icon="$_[3]"><action name="Execute"><execute>$CONFIG{file_manager} &quot;$_[1]/}
+    qq{<item label="}
+      . ($_[2] =~ s/_/__/gr)
+      . qq{" icon="$_[3]"><action name="Execute"><execute>$CONFIG{file_manager} &quot;$_[1]/}
       . escapeQuot($_[2])
       . q{&quot;</execute></action></item>};
 }
@@ -235,8 +245,15 @@ sub mk_file_elem {
             }
 
             require File::MimeInfo;       # File::MimeInfo::Magic is better, but slower!
-            my $mime_type = File::MimeInfo::mimetype("$path/$file");
-            $mime_type =~ tr{/}{-};
+
+            my $mime_type = (
+                             (
+                              $CONFIG{mime_ext_only}
+                              ? File::MimeInfo::globs($file)
+                              : File::MimeInfo::mimetype("$path/$file")
+                             ) // 'unknown'
+                            ) =~ tr{/}{-}r;
+
             $mime_type = $alias{$mime_type} if exists $alias{$mime_type};
 
             {
@@ -270,7 +287,7 @@ sub mk_file_elem {
             ];
         }
         else {
-            push +(-d "$path/$file" ? \@dirs : \@files), [$file, ''];
+            push @{-d "$path/$file" ? \@dirs : \@files}, [$file, ''];
         }
 
     }
@@ -281,8 +298,8 @@ sub mk_file_elem {
     my $escapedProgramName = xmlEscape($0);
 
     # "Browse here..." lauches this dir
-    my $generated_menu =
-qq{<openbox_pipe_menu><item label="Browse here..."><action name="Execute"><execute>$CONFIG{file_manager} &quot;$qEscapedDir&quot;</execute></action></item><separator/>};
+    my $generated_menu = qq{<openbox_pipe_menu><item label="Browse here..."><action name="Execute">}
+      . qq{<execute>$CONFIG{file_manager} &quot;$qEscapedDir&quot;</execute></action></item><separator/>};
 
     my @calls = ([\&mk_file_elem => \@files], [\&mk_dir_elem => \@dirs]);
 
