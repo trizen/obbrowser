@@ -3,6 +3,12 @@ obbrowser
 
 A simple script for Openbox which recursively browses the filesystem through pipe menus (with icons)
 
+### Dependencies:
+
+* [Data::Dump](https://metacpan.org/pod/Data::Dump)
+* [File::MimeInfo](https://metacpan.org/pod/File::MimeInfo)
+* [Linux::DesktopFiles>=0.08](https://metacpan.org/pod/Linux::DesktopFiles)
+
 ### Set-up:
 
 * To use this script with Openbox, insert the following
@@ -28,3 +34,6 @@ A simple script for Openbox which recursively browses the filesystem through pip
 obbrowser [dir]
 ```
 
+### Availability:
+
+AUR: https://aur.archlinux.org/packages/obbrowser/
