@@ -130,7 +130,7 @@ my %CONFIG = (
                                         skip_svg_icons  => 0,
                                        },
               file_manager  => 'pcmanfm',
-              browse_label  => 'Otwórz tutaj...',
+              browse_label  => 'Browse here...',
               start_path    => $home_dir,
               dirs_first    => 0,
               with_icons    => 1,
