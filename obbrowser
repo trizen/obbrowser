@@ -114,6 +114,7 @@ my $config_documentation = <<"EOD";
 
 || MENU
     | file_manager        : Command to your file manager for opening files and directories.
+    | browse_label		  : Label for browse here action.
     | start_path          : An absolute path from which to start to browse the filesystem.
     | dirs_first          : A true value will make the script to order directories before files.
 
@@ -129,6 +130,7 @@ my %CONFIG = (
                                         skip_svg_icons  => 0,
                                        },
               file_manager  => 'pcmanfm',
+              browse_label  => 'Otwórz tutaj...',
               start_path    => $home_dir,
               dirs_first    => 0,
               with_icons    => 1,
@@ -298,7 +300,7 @@ sub mk_file_elem {
     my $escapedProgramName = xmlEscape($0);
 
     # "Browse here..." lauches this dir
-    my $generated_menu = qq{<openbox_pipe_menu><item label="Browse here..."><action name="Execute">}
+    my $generated_menu = qq{<openbox_pipe_menu><item label="$CONFIG{browse_label}"><action name="Execute">}
       . qq{<execute>$CONFIG{file_manager} &quot;$qEscapedDir&quot;</execute></action></item><separator/>};
 
     my @calls = ([\&mk_file_elem => \@files], [\&mk_dir_elem => \@dirs]);
