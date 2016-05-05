@@ -32,7 +32,7 @@
 #use warnings;
 
 my $pkgname = 'obbrowser';
-my $version = 0.05;
+my $version = 0.06;
 
 our $CONFIG;
 
