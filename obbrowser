@@ -256,7 +256,7 @@ sub mk_file_elem {
                               ? File::MimeInfo::globs($file)
                               : File::MimeInfo::mimetype("$path/$file")
                              ) // 'unknown'
-                            ) =~ tr{/}{-}r;
+                            ) =~ tr|/|-|r;
 
             $mime_type = $alias{$mime_type} if exists $alias{$mime_type};
 
