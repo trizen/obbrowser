@@ -1,7 +1,7 @@
 obbrowser
 =========
 
-A simple script for Openbox which recursively browses the filesystem through pipe menus (with icons)
+A very fast dynamic file browser that allows quick searching and launching of user directories and files.
 
 ### Dependencies:
 
@@ -20,7 +20,7 @@ A simple script for Openbox which recursively browses the filesystem through pip
    line in your `schema.pl` file:
 
         {pipe => ["obbrowser", "Disk", "drive-harddisk"]},
-        
+
 * Reconfigure openbox:
 
         openbox --reconfigure
