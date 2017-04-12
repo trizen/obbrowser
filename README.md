@@ -16,7 +16,7 @@ A very fast dynamic file browser that allows quick searching and launching of us
 
         <menu id="obbrowser" label="Disk" execute="obbrowser"/>
 
-* If you're using it with `obmenu-generator`, insert the following
+* If you're using it with [obmenu-generator](https://github.com/trizen/obmenu-generator), insert the following
    line in your `schema.pl` file:
 
         {pipe => ["obbrowser", "Disk", "drive-harddisk"]},
