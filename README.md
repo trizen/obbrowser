@@ -25,7 +25,7 @@ A very fast dynamic file browser that allows quick searching and launching of us
 
         openbox --reconfigure
 
-* For low-level options, check the configuration file:
+* For low-level options, see the configuration file:
 
           ~/.config/obbrowser/config.pl
 
