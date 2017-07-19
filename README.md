@@ -5,9 +5,9 @@ A very fast dynamic file browser that allows quick searching and launching of us
 
 ### Dependencies:
 
+* [Gtk2](https://metacpan.org/pod/Gtk2)
 * [Data::Dump](https://metacpan.org/pod/Data::Dump)
 * [File::MimeInfo](https://metacpan.org/pod/File::MimeInfo)
-* [Linux::DesktopFiles>=0.08](https://metacpan.org/pod/Linux::DesktopFiles)
 
 ### Set-up:
 
