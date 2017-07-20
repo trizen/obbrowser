@@ -100,10 +100,10 @@ my $config_documentation = <<"EOD";
     | mime_ext_only    : A true value will make the script to get the mimetype by extension only.
                          This will improve the performance, as no content will be read from files.
 
-    | icon_size        : Preferred size for icons. (default: 16)
+    | icon_size        : Preferred size for icons. (default: 32)
     | skip_svg_icons   : Ignore SVG icons. (default: 0)
     | force_svg_icons  : Use only SVG icons. (default: 0)
-    | force_icon_size  : Use only icons at the prefered icon size, if possible. (default: 0)
+    | force_icon_size  : Use only icons at the preferred icon size, if possible. (default: 0)
 
 
 || MENU
@@ -123,7 +123,7 @@ my %CONFIG = (
               dirs_first      => 0,
               with_icons      => 1,
               mime_ext_only   => 0,
-              icon_size       => 16,
+              icon_size       => 32,
               force_icon_size => 0,
               force_svg_icons => 0,
               skip_svg_icons  => 0,
