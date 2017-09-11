@@ -21,7 +21,7 @@
 # Name: obbrowser
 # License: GPLv3
 # Date: 29 December 2012
-# Latest edit: 19 July 2017
+# Latest edit: 11 September 2017
 # https://github.com/trizen/obbrowser
 
 # ---------------------------------------------------------
@@ -135,6 +135,7 @@ sub dump_configuration {
     open my $config_fh, '>', $config_file
       or die "Can't open file '${config_file}' for write: $!";
     my $dumped_config = q{our $CONFIG = } . Data::Dump::dump(\%CONFIG);
+    $dumped_config =~ s/\Q$home_dir\E/\$ENV{HOME}/g if ($home_dir eq $ENV{HOME});
     print $config_fh $config_documentation, $dumped_config;
     close $config_fh;
 }
