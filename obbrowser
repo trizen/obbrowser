@@ -15,25 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Original author: dircha
-# See: http://bbs.archbang.org/viewtopic.php?id=1589
-
 # Name: obbrowser
 # License: GPLv3
 # Date: 29 December 2012
-# Latest edit: 11 September 2017
+# Latest edit: 07 October 2017
 # https://github.com/trizen/obbrowser
 
 # ---------------------------------------------------------
-# Recursively browse filesystem through openbox3 pipe menus
+# Recursively browse filesystem through Openbox3 pipe menus
 # ---------------------------------------------------------
 
 use 5.014;
+
 #use strict;
 #use warnings;
 
 my $pkgname = 'obbrowser';
-my $version = 0.07;
+my $version = 0.08;
 
 our $CONFIG;
 
@@ -101,10 +99,8 @@ my $config_documentation = <<"EOD";
                          This will improve the performance, as no content will be read from files.
 
     | icon_size        : Preferred size for icons. (default: 32)
-    | skip_svg_icons   : Ignore SVG icons. (default: 0)
-    | force_svg_icons  : Use only SVG icons. (default: 0)
-    | force_icon_size  : Use only icons at the preferred icon size, if possible. (default: 0)
-
+    | generic_fallback : Try to shorten icon name at '-' characters before looking at inherited themes. (default: 1)
+    | force_icon_size  : Always get the icon scaled to the requested size. (default: 0)
 
 || MENU
     | file_manager     : Command to your file manager for opening files and directories.
@@ -117,17 +113,16 @@ my $config_documentation = <<"EOD";
 EOD
 
 my %CONFIG = (
-              file_manager    => 'pcmanfm',
-              browse_label    => 'Browse here...',
-              start_path      => $home_dir,
-              dirs_first      => 0,
-              with_icons      => 1,
-              mime_ext_only   => 0,
-              icon_size       => 32,
-              force_icon_size => 0,
-              force_svg_icons => 0,
-              skip_svg_icons  => 0,
-              VERSION         => $version,
+              file_manager     => 'pcmanfm',
+              browse_label     => 'Browse here...',
+              start_path       => $home_dir,
+              dirs_first       => 0,
+              with_icons       => 1,
+              mime_ext_only    => 0,
+              icon_size        => 32,
+              force_icon_size  => 0,
+              generic_fallback => 1,
+              VERSION          => $version,
              );
 
 sub dump_configuration {
@@ -208,12 +203,12 @@ sub get_icon_path {
         "${gtk}::IconTheme"->get_default;
     };
 
-    state $flags = "${gtk}::IconLookupFlags"->new(
-                                                  [($CONFIG{force_icon_size} ? 'force-size' : ()),
-                                                   ($CONFIG{skip_svg_icons}  ? 'no-svg'     : ()),
-                                                   ($CONFIG{force_svg_icons} ? 'force-svg'  : ()),
-                                                  ]
-                                                 );
+#<<<
+    state $flags = "${gtk}::IconLookupFlags"->new([
+                                                    ($CONFIG{force_icon_size}  ? 'force-size'       : ()),
+                                                    ($CONFIG{generic_fallback} ? 'generic-fallback' : ()),
+                                                  ]);
+#>>>
 
     my $icon_info = $theme->lookup_icon($name, $CONFIG{icon_size}, $flags);
 
