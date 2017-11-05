@@ -3,6 +3,10 @@ obbrowser
 
 A very fast dynamic file browser that allows quick searching and launching of user directories and files.
 
+![obbrowser](https://2.bp.blogspot.com/-JYbaONBw-1A/UN8O4Fog2UI/AAAAAAAAKYo/vr_XkJwfS78/s1600/obbrowser.png)
+
+----
+
 ### Dependencies:
 
 * [Gtk2](https://metacpan.org/pod/Gtk2)
