@@ -98,12 +98,14 @@ my $config_documentation = <<"EOD";
     | mime_ext_only    : A true value will make the script to get the mimetype by extension only.
                          This will improve the performance, as no content will be read from files.
 
-    | icon_size        : Preferred size for icons. (default: 48)
+    | icon_size        : Preferred size for icons. (default: 32)
     | generic_fallback : Try to shorten icon name at '-' characters before looking at inherited themes. (default: 1)
     | force_icon_size  : Always get the icon scaled to the requested size. (default: 0)
 
 || MENU
     | file_manager     : Command to your file manager for opening files and directories.
+    | browse_label     : Label for "Browse here..." action.
+    | terminal		   : Command to your terminal emulator for opening directories.
     | browse_label     : Label for "Browse here..." action.
     | start_path       : An absolute path from which to start to browse the filesystem.
     | dirs_first       : A true value will make the script to order directories before files.
@@ -114,14 +116,17 @@ my $config_documentation = <<"EOD";
 EOD
 
 my %CONFIG = (
-              file_manager     => 'pcmanfm',
+              file_manager     => 'thunar',
               browse_label     => 'Browse here...',
+              terminal    	   => 'termite -d',
+              terminal_label   => 'Terminal here...',
+              with_terminal    => 1,
               start_path       => $home_dir,
               dirs_first       => 0,
+              ignore_dotfiles  => 0,
               with_icons       => 1,
               mime_ext_only    => 0,
-              ignore_dotfiles  => 1,
-              icon_size        => 48,
+              icon_size        => 32,
               force_icon_size  => 0,
               generic_fallback => 1,
               VERSION          => $version,
@@ -226,18 +231,14 @@ sub check_icon {
 my $path = @ARGV ? shift() : $CONFIG{start_path};
 
 my (%alias, %icons, @dirs, @files);
-
-opendir(my $dir_h, $path)
-  or warn "$0: Can't open dir `$path': $!\n";
-
+opendir(my $dir_h, $path) or warn "$0: Can't open dir `$path': $!\n";
 foreach my $file (readdir $dir_h) {
 
-    if ($CONFIG{ignore_dotfiles}) {
-        next if substr($file, 0, 1) eq q{.};
-    }
-    else {
-        next if ($file eq q{.} or $file eq q{..});
-    }
+	if ($CONFIG{ignore_dotfiles}) {
+		next if chr ord $file eq q{.};    # skip the hidden files
+	}else {
+		next if $file eq q{.} or $file eq q{..};    # skip pseudo-directories
+	}
 
     if ($CONFIG{with_icons}) {
 
@@ -246,7 +247,7 @@ foreach my $file (readdir $dir_h) {
             next;
         }
 
-        require File::MimeInfo;    # File::MimeInfo::Magic is better, but slower!
+        require File::MimeInfo;       # File::MimeInfo::Magic is better, but slower!
 
         my $mime_type = (
                          (
@@ -299,9 +300,17 @@ my $thisDir            = xmlEscape($path);
 my $qEscapedDir        = escapeQuot($thisDir);
 my $escapedProgramName = xmlEscape($0);
 
-# "Browse here..." launches this directory
-my $generated_menu = qq{<openbox_pipe_menu><item label="$CONFIG{browse_label}"><action name="Execute">}
-  . qq{<execute>$CONFIG{file_manager} &quot;$qEscapedDir&quot;</execute></action></item><separator/>};
+#"Browse here..." launches this directory
+my $generated_menu = qq{<openbox_pipe_menu><item label="$CONFIG{browse_label}"><action name="Execute">
+	. <execute>$CONFIG{file_manager} &quot;$qEscapedDir&quot;</execute></action></item><separator/>};
+
+if ($CONFIG{with_terminal}) {
+	#"Terminal here..." launches this directory in a terminal emulator
+	$generated_menu = qq{<openbox_pipe_menu><item label="$CONFIG{browse_label}"><action name="Execute">}
+		. qq{<execute>$CONFIG{file_manager} &quot;$qEscapedDir&quot;</execute></action></item>}
+		. qq{<item label="$CONFIG{terminal_label}"><action name="Execute">}
+		. qq{<execute>$CONFIG{terminal} &quot;$qEscapedDir&quot;</execute></action></item><separator/>};
+}
 
 my @calls = ([\&mk_file_elem => \@files], [\&mk_dir_elem => \@dirs]);
 
