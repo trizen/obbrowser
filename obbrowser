@@ -120,7 +120,7 @@ my %CONFIG = (
               dirs_first       => 0,
               with_icons       => 1,
               mime_ext_only    => 0,
-              ignore_dotfiles  => 0,
+              ignore_dotfiles  => 1,
               icon_size        => 48,
               force_icon_size  => 0,
               generic_fallback => 1,
@@ -226,15 +226,18 @@ sub check_icon {
 my $path = @ARGV ? shift() : $CONFIG{start_path};
 
 my (%alias, %icons, @dirs, @files);
-opendir(my $dir_h, $path) or warn "$0: Can't open dir `$path': $!\n";
+
+opendir(my $dir_h, $path)
+  or warn "$0: Can't open dir `$path': $!\n";
+
 foreach my $file (readdir $dir_h) {
 
-    	if ($CONFIG{ignore_dotfiles}) {
-		next if chr ord $file eq q{.};    # skip the hidden files
-	}
-     else {
-		next if $file eq q{.} or $file eq q{..};    # skip the hidden files
-	}
+    if ($CONFIG{ignore_dotfiles}) {
+        next if substr($file, 0, 1) eq q{.};
+    }
+    else {
+        next if ($file eq q{.} or $file eq q{..});
+    }
 
     if ($CONFIG{with_icons}) {
 
@@ -243,7 +246,7 @@ foreach my $file (readdir $dir_h) {
             next;
         }
 
-        require File::MimeInfo;       # File::MimeInfo::Magic is better, but slower!
+        require File::MimeInfo;    # File::MimeInfo::Magic is better, but slower!
 
         my $mime_type = (
                          (
