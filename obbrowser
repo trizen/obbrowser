@@ -312,13 +312,13 @@ my $escapedProgramName = xmlEscape($0);
 # "Browse here..." and "Terminal here..." entries
 my $generated_menu =
     qq{<openbox_pipe_menu><item label="$CONFIG{browse_label}"}
-  . ($CONFIG{with_icons} ? (qq{ icon="} . get_icon_path($CONFIG{file_manager_icon}) . q{"}) : '')
+  . ($CONFIG{with_icons} ? (qq{ icon="} . check_icon($CONFIG{file_manager_icon}) . q{"}) : '')
   . qq{><action name="Execute">}
   . qq{<execute>$CONFIG{file_manager} &quot;$qEscapedDir&quot;</execute></action></item>}
   . (
      $CONFIG{with_terminal}
      ? (qq{<item label="$CONFIG{terminal_label}"}
-        . ($CONFIG{with_icons} ? (qq{ icon="} . get_icon_path($CONFIG{terminal_icon}) . q{"}) : '')
+        . ($CONFIG{with_icons} ? (qq{ icon="} . check_icon($CONFIG{terminal_icon}) . q{"}) : '')
         . qq{><action name="Execute"><execute>$CONFIG{terminal} &quot;$qEscapedDir&quot;</execute></action></item>})
      : q{}
     )
