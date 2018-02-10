@@ -127,7 +127,7 @@ my %CONFIG = (
               terminal          => 'sakura -d',
               with_terminal     => 0,
               start_path        => $home_dir,
-              dirs_first        => 0,
+              dirs_first        => 1,
               with_icons        => 1,
               mime_ext_only     => 0,
               ignore_dotfiles   => 1,
@@ -233,7 +233,7 @@ sub check_icon {
     $cache_db{$_[0]} //= get_icon_path($_[0]);
 }
 
-my $path = @ARGV ? shift() : $CONFIG{start_path};
+my $path = @ARGV ? shift(@ARGV) : $CONFIG{start_path};
 
 my (%alias, %icons, @dirs, @files);
 
