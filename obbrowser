@@ -98,35 +98,34 @@ my $config_documentation = <<"EOD";
     | mime_ext_only    : A true value will make the script to get the mimetype by extension only.
                          This will improve the performance, as no content will be read from files.
 
-    | icon_size        : Preferred size for icons. (default: 32)
+    | icon_size        : Preferred size for icons. (default: 48)
     | generic_fallback : Try to shorten icon name at '-' characters before looking at inherited themes. (default: 1)
     | force_icon_size  : Always get the icon scaled to the requested size. (default: 0)
 
 || MENU
     | file_manager     : Command to your file manager for opening files and directories.
     | browse_label     : Label for "Browse here..." action.
-    | terminal		   : Command to your terminal emulator for opening directories.
-    | browse_label     : Label for "Browse here..." action.
     | start_path       : An absolute path from which to start to browse the filesystem.
     | dirs_first       : A true value will make the script to order directories before files.
     | ignore_dotfiles  : A true value will make the script to ignore files starting with a dot
+    | terminal		   : Command to your terminal emulator for opening directories.
 
 =cut
 
 EOD
 
 my %CONFIG = (
-              file_manager     => 'thunar',
+              file_manager     => 'pcmanfm',
               browse_label     => 'Browse here...',
               terminal    	   => 'termite -d',
               terminal_label   => 'Terminal here...',
               with_terminal    => 1,
               start_path       => $home_dir,
               dirs_first       => 0,
-              ignore_dotfiles  => 0,
               with_icons       => 1,
               mime_ext_only    => 0,
-              icon_size        => 32,
+              ignore_dotfiles  => 1,
+              icon_size        => 48,
               force_icon_size  => 0,
               generic_fallback => 1,
               VERSION          => $version,
@@ -231,14 +230,18 @@ sub check_icon {
 my $path = @ARGV ? shift() : $CONFIG{start_path};
 
 my (%alias, %icons, @dirs, @files);
-opendir(my $dir_h, $path) or warn "$0: Can't open dir `$path': $!\n";
+
+opendir(my $dir_h, $path)
+  or warn "$0: Can't open dir `$path': $!\n";
+
 foreach my $file (readdir $dir_h) {
 
-	if ($CONFIG{ignore_dotfiles}) {
-		next if chr ord $file eq q{.};    # skip the hidden files
-	}else {
-		next if $file eq q{.} or $file eq q{..};    # skip pseudo-directories
-	}
+    if ($CONFIG{ignore_dotfiles}) {
+        next if substr($file, 0, 1) eq q{.};
+    }
+    else {
+        next if ($file eq q{.} or $file eq q{..});
+    }
 
     if ($CONFIG{with_icons}) {
 
@@ -247,7 +250,7 @@ foreach my $file (readdir $dir_h) {
             next;
         }
 
-        require File::MimeInfo;       # File::MimeInfo::Magic is better, but slower!
+        require File::MimeInfo;    # File::MimeInfo::Magic is better, but slower!
 
         my $mime_type = (
                          (
