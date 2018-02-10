@@ -108,6 +108,7 @@ my $config_documentation = <<"EOD";
     | start_path       : An absolute path from which to start to browse the filesystem.
     | dirs_first       : A true value will make the script to order directories before files.
     | ignore_dotfiles  : A true value will make the script to ignore files starting with a dot
+    | terminal		   : Command to your terminal emulator for opening directories.
 
 =cut
 
@@ -116,6 +117,9 @@ EOD
 my %CONFIG = (
               file_manager     => 'pcmanfm',
               browse_label     => 'Browse here...',
+              terminal    	   => 'termite -d',
+              terminal_label   => 'Terminal here...',
+              with_terminal    => 1,
               start_path       => $home_dir,
               dirs_first       => 0,
               with_icons       => 1,
@@ -299,9 +303,17 @@ my $thisDir            = xmlEscape($path);
 my $qEscapedDir        = escapeQuot($thisDir);
 my $escapedProgramName = xmlEscape($0);
 
-# "Browse here..." launches this directory
-my $generated_menu = qq{<openbox_pipe_menu><item label="$CONFIG{browse_label}"><action name="Execute">}
-  . qq{<execute>$CONFIG{file_manager} &quot;$qEscapedDir&quot;</execute></action></item><separator/>};
+#"Browse here..." launches this directory
+my $generated_menu = qq{<openbox_pipe_menu><item label="$CONFIG{browse_label}"><action name="Execute">
+	. <execute>$CONFIG{file_manager} &quot;$qEscapedDir&quot;</execute></action></item><separator/>};
+
+if ($CONFIG{with_terminal}) {
+	#"Terminal here..." launches this directory in a terminal emulator
+	$generated_menu = qq{<openbox_pipe_menu><item label="$CONFIG{browse_label}"><action name="Execute">}
+		. qq{<execute>$CONFIG{file_manager} &quot;$qEscapedDir&quot;</execute></action></item>}
+		. qq{<item label="$CONFIG{terminal_label}"><action name="Execute">}
+		. qq{<execute>$CONFIG{terminal} &quot;$qEscapedDir&quot;</execute></action></item><separator/>};
+}
 
 my @calls = ([\&mk_file_elem => \@files], [\&mk_dir_elem => \@dirs]);
 
