@@ -18,7 +18,7 @@
 # Program: obbrowser
 # License: GPLv3
 # Date: 29 December 2012
-# Latest edit: 10 February 2018
+# Latest edit: 16 October 2019
 # https://github.com/trizen/obbrowser
 
 # Contributors:
@@ -33,7 +33,7 @@ use 5.014;
 #use warnings;
 
 my $pkgname = 'obbrowser';
-my $version = 0.09;
+my $version = 0.11;
 
 our $CONFIG;
 
@@ -123,7 +123,7 @@ my %CONFIG = (
               terminal_label    => 'Terminal here...',
               terminal_icon     => 'utilities-terminal',
               file_manager_icon => 'folder-open',
-              terminal          => 'sakura -d',
+              terminal          => 'tilix --working-directory',
               with_terminal     => 0,
               start_path        => $home_dir,
               dirs_first        => 1,
@@ -132,6 +132,7 @@ my %CONFIG = (
               ignore_dotfiles   => 1,
               icon_size         => 48,
               generic_fallback  => 1,
+              use_gtk3          => 0,
               VERSION           => $version,
              );
 
@@ -203,15 +204,22 @@ tie my %cache_db, 'GDBM_File', $cache_db, &GDBM_File::GDBM_WRCREAT, 0640;
 sub get_icon_path {
     my ($name) = @_;
 
-    state $gtk = do {
+    state $gtk = $CONFIG{use_gtk3}
+      ? do {
+        eval "use Gtk3";
+        'Gtk3'->init;
+        'Gtk3';
+      }
+      : do {
         require Gtk2;
         'Gtk2'->init;
         'Gtk2';
-    };
+      };
 
-    state $theme = do {
-        "${gtk}::IconTheme"->get_default;
-    };
+    state $theme =
+      ($gtk eq 'Gtk2')
+      ? Gtk2::IconTheme->get_default
+      : Gtk3::IconTheme::get_default();
 
 #<<<
     state $flags = "${gtk}::IconLookupFlags"->new([
