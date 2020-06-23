@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright (C) 2012-2019 Daniel "Trizen" Șuteu <echo dHJpemVueEBnbWFpbC5jb20K | base64 -d>.
+# Copyright (C) 2012-2020 Daniel "Trizen" Șuteu <echo dHJpemVueEBnbWFpbC5jb20K | base64 -d>.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 # Program: obbrowser
 # License: GPLv3
 # Date: 29 December 2012
-# Latest edit: 16 October 2019
+# Latest edit: 23 June 2020
 # https://github.com/trizen/obbrowser
 
 # Contributors:
@@ -74,6 +74,14 @@ usage: $0 [dir]
         $config_file
 USAGE
     exit;
+}
+
+sub remove_database {
+    my ($db) = @_;
+
+    foreach my $file ($db, "$db.dir", "$db.pag") {
+        unlink($file) if (-e $file);
+    }
 }
 
 if (@ARGV and $ARGV[0] eq '-h' || $ARGV[0] eq '--help') {
@@ -163,14 +171,10 @@ if ($CONFIG{VERSION} != $version) {
 my $with_icons = $CONFIG{with_icons};
 
 if ($with_icons and not -d $icons_dir) {
-    unlink($cache_db);
+    remove_database($cache_db);
     require File::Path;
     File::Path::make_path($icons_dir)
       or warn "$0: can't create icon path `$icons_dir': $!\n";
-}
-
-{
-    @INC{'warnings.pm', 'warnings/register.pm', 'strict.pm'} = ();
 }
 
 {
@@ -209,13 +213,15 @@ sub mk_file_elem {
 
 # Regenerate the cache db if the config file has been modified
 if (!$db_clean and ((-M $config_file) < (-M $cache_db))) {
-    print STDERR "[*] Regenerating the cache DB...\n";
-    unlink $cache_db;
+    print STDERR ":: Regenerating the cache DB...\n";
+    remove_database($cache_db);
     $db_clean = 1;
 }
 
-require GDBM_File;
-tie my %cache_db, 'GDBM_File', $cache_db, &GDBM_File::GDBM_WRCREAT, 0640;
+eval { require GDBM_File };
+
+dbmopen(my %cache_db, $cache_db, 0777)
+  or die "Can't create/access database <<$cache_db>>: $!";
 
 # Regenerate the icon db if the GTKRC file has been modified
 if ($with_icons) {
@@ -227,10 +233,14 @@ if ($with_icons) {
     else {
         my $old_mtime = $cache_db{__GTKRC_MTIME__} // -1;
         if ($old_mtime != $gtkrc_mtime) {
-            print STDERR "[*] Regenerating the cache DB...\n";
-            untie %cache_db;
-            unlink $cache_db;
-            tie %cache_db, 'GDBM_File', $cache_db, &GDBM_File::GDBM_WRCREAT, 0640;
+            print STDERR ":: Regenerating the cache DB...\n";
+
+            dbmclose(%cache_db);
+            remove_database($cache_db);
+
+            dbmopen(my %cache_db, $cache_db, 0777)
+              or die "Can't create database <<$cache_db>>: $!";
+
             $cache_db{__GTKRC_MTIME__} = $gtkrc_mtime;
         }
     }
@@ -240,10 +250,6 @@ sub get_icon_path {
     my ($icon_name) = @_;
 
     state $gtk = do {
-
-        delete($INC{'Exporter.pm'}) if !defined($INC{'Exporter.pm'});
-        delete($INC{'Carp.pm'})     if !defined($INC{'Carp.pm'});
-        delete($INC{'Tie/Hash.pm'}) if !defined($INC{'Tie/Hash.pm'});
 
         require Digest::MD5;
 
