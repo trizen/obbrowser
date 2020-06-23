@@ -33,7 +33,7 @@ use 5.014;
 #use warnings;
 
 my $pkgname = 'obbrowser';
-my $version = 0.12;
+my $version = 0.13;
 
 our $CONFIG;
 
