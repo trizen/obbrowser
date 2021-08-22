@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright (C) 2012-2020 Daniel "Trizen" Șuteu <echo dHJpemVueEBnbWFpbC5jb20K | base64 -d>.
+# Copyright (C) 2012-2021 Daniel "Trizen" Șuteu <echo dHJpemVueEBnbWFpbC5jb20K | base64 -d>.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 # Program: obbrowser
 # License: GPLv3
 # Date: 29 December 2012
-# Latest edit: 23 June 2020
+# Latest edit: 22 August 2021
 # https://github.com/trizen/obbrowser
 
 # Contributors:
@@ -33,7 +33,7 @@ use 5.014;
 #use warnings;
 
 my $pkgname = 'obbrowser';
-my $version = 0.13;
+my $version = 0.14;
 
 our $CONFIG;
 
@@ -99,7 +99,7 @@ my $config_documentation = <<"EOD";
 
 # ICON SETTINGS
 
-    | use_gtk3         : Use the Gtk3 library for resolving the icon-paths. (default: 0)
+    | gtk_version      : The version of the Gtk library used for resolving the icon paths. (default: 3)
     | with_icons       : Use icons for files and directories.
     | mime_ext_only    : Determine the mimetype by extension only. (may improve performance)
 
@@ -130,7 +130,7 @@ my %CONFIG = (
               terminal_icon     => 'utilities-terminal',
               file_manager_icon => 'folder-open',
               terminal          => 'tilix --working-directory',
-              gtk_rc_filename   => "$home_dir/.gtkrc-2.0",
+              gtk_rc_filename   => "$home_dir/.config/gtk-3.0/settings.ini",
               with_terminal     => 0,
               start_path        => $home_dir,
               dirs_first        => 1,
@@ -140,7 +140,7 @@ my %CONFIG = (
               icon_size         => 48,
               generic_fallback  => 1,
               force_icon_size   => 0,
-              use_gtk3          => 0,
+              gtk_version       => 3,
               VERSION           => $version,
              );
 
@@ -253,7 +253,7 @@ sub get_icon_path {
 
         require Digest::MD5;
 
-        $CONFIG{use_gtk3}
+        ($CONFIG{gtk_version} == 3)
           ? do {
             eval "use Gtk3";
             'Gtk3'->init;
