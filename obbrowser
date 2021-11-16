@@ -160,7 +160,7 @@ if (not -e $config_file or -z _) {
 
 require $config_file;    # load the configuration file
 
-my @valid_keys = grep exists $CONFIG{$_}, keys %{$CONFIG};
+my @valid_keys = grep { exists $CONFIG{$_} } keys %{$CONFIG};
 @CONFIG{@valid_keys} = @{$CONFIG}{@valid_keys};
 
 if ($CONFIG{VERSION} != $version) {
@@ -177,22 +177,20 @@ if ($with_icons and not -d $icons_dir) {
       or warn "$0: can't create icon path `$icons_dir': $!\n";
 }
 
-{
-    my %table = (
-                 '&' => 'amp',
-                 '"' => 'quot',
-                 "'" => 'apos',
-                 '<' => 'lt',
-                 '>' => 'gt',
-                );
+my %xml_escape_table = (
+                        '&' => 'amp',
+                        '"' => 'quot',
+                        "'" => 'apos',
+                        '<' => 'lt',
+                        '>' => 'gt',
+                       );
 
-    sub xmlEscape {
-        $_[0] =~ tr/&"'<>// ? $_[0] =~ s/([&"'<>])/&$table{$1};/gr : $_[0];
-    }
+sub xmlEscape {
+    ($_[0] =~ tr/&"'<>//) ? ($_[0] =~ s/([&"'<>])/&$xml_escape_table{$1};/gr) : $_[0];
 }
 
 sub escapeQuot {
-    index($_[0], '&quot;') == -1 ? $_[0] : $_[0] =~ s/&quot;/\\&quot;/gr;
+    (index($_[0], '&quot;') == -1) ? $_[0] : ($_[0] =~ s/&quot;/\\&quot;/gr);
 }
 
 sub mk_dir_elem {
@@ -402,8 +400,8 @@ my $generated_menu =
 my @calls = ([\&mk_file_elem => \@files], [\&mk_dir_elem => \@dirs]);
 
 foreach my $call ($CONFIG{dirs_first} ? reverse(@calls) : @calls) {
-    $generated_menu .= $call->[0]->($thisDir, $qEscapedDir, xmlEscape($_->[0]), $_->[1], $escapedProgramName)
-      for sort { lc $a->[0] cmp lc $b->[0] } @{$call->[1]};
+    $generated_menu .= $call->[0]->($thisDir, $qEscapedDir, xmlEscape($_->[1][0]), $_->[1][1], $escapedProgramName)
+      for sort { $a->[0] cmp $b->[0] } map { [lc($_->[0]), $_] } @{$call->[1]};
 }
 
 local $| = 1;

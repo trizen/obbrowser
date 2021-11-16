@@ -9,31 +9,38 @@ A very fast dynamic file browser that allows quick searching and launching of us
 
 ### Dependencies:
 
-* [Gtk2](https://metacpan.org/pod/Gtk2)
+* [Gtk3](https://metacpan.org/pod/Gtk3)
 * [Data::Dump](https://metacpan.org/pod/Data::Dump)
 * [File::MimeInfo](https://metacpan.org/pod/File::MimeInfo)
 
 ### Set-up:
 
-* To use this script with Openbox, insert the following
-   line in your `menu.xml` file:
+* To use this script with Openbox, insert the following line in your `menu.xml` file:
 
+```xml
         <menu id="obbrowser" label="Disk" execute="obbrowser"/>
+```
 
-* If you're using it with [obmenu-generator](https://github.com/trizen/obmenu-generator), insert the following
-   line in your `schema.pl` file:
+* If you're using it with [obmenu-generator](https://github.com/trizen/obmenu-generator), insert the following line in your `schema.pl` file:
 
+```perl
         {pipe => ["obbrowser", "Disk", "drive-harddisk"]},
+```
 
 * Reconfigure openbox:
 
+```
         openbox --reconfigure
+```
 
 * For low-level options, see the configuration file:
 
+```
           ~/.config/obbrowser/config.pl
+```
 
 ### Usage:
+
 ```
 obbrowser [dir]
 ```
