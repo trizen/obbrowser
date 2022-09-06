@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright (C) 2012-2021 Daniel "Trizen" Șuteu <echo dHJpemVuQHByb3Rvbm1haWwuY29tCg== | base64 -d>.
+# Copyright (C) 2012-2022 Daniel "Trizen" Șuteu <echo dHJpemVuQHByb3Rvbm1haWwuY29tCg== | base64 -d>.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 # Program: obbrowser
 # License: GPLv3
 # Date: 29 December 2012
-# Latest edit: 22 August 2021
+# Latest edit: 06 September 2022
 # https://github.com/trizen/obbrowser
 
 # Contributors:
@@ -33,7 +33,7 @@ use 5.014;
 #use warnings;
 
 my $pkgname = 'obbrowser';
-my $version = 0.14;
+my $version = 0.15;
 
 our $CONFIG;
 
